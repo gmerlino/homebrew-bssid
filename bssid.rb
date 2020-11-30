@@ -15,12 +15,13 @@ class Bssid < Formula
     system "#{bin}/bssid", "scan"
   end
 
-  caveats <<~EOS
-    BSSID requires your Developer Signing Identity, which can be found by issuing the following command on the CLI:
-      security find-identity -v -p codesigning
-    in order to provide entitlements to the binary (hard requirement for Catalina).
-    The Identity may be set as an environment variable as follows:
-
-      HOMEBREW_NO_ENV_FILTERING=1 SIGN_ID="abcdef123456" brew install bssid
-  EOS
+  def caveats
+    <<~EOS
+      BSSID requires your Developer Signing Identity, which can be found by issuing the following command on the CLI:
+        security find-identity -v -p codesigning
+      in order to provide entitlements to the binary (hard requirement for Catalina).
+      The Identity may be set as an environment variable as follows:
+        HOMEBREW_NO_ENV_FILTERING=1 SIGN_ID="abcdef123456" brew install bssid
+    EOS
+  end
 end
