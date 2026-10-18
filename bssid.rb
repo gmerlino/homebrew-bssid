@@ -1,18 +1,18 @@
 class Bssid < Formula
-  desc "command line tool to connect to specific bssid for macOS"
+  desc "Scan Wi-Fi networks and connect to a specific access point on macOS"
   homepage "https://github.com/braineo/airport-bssid"
-  head "https://github.com/braineo/airport-bssid.git"
+  license "GPL-3.0-only"
+  head "https://github.com/braineo/airport-bssid.git", branch: "master"
 
-  depends_on :xcode => ["11.4", :build]
-  depends_on :macos => :catalina
+  depends_on xcode: ["11.4", :build]
+  depends_on :macos
 
   def install
-    system "swift", "build", "-c", "release", "--static-swift-stdlib", "--disable-sandbox"
-    bin.install ".build/release/bssid"
-  end
+    system "swift", "build",
+           "--configuration", "release",
+           "--disable-sandbox"
 
-  test do
-    system "#{bin}/bssid", "scan"
+    bin.install ".build/release/bssid"
   end
 
   def caveats
@@ -23,5 +23,11 @@ class Bssid < Formula
       The Identity may be set as an environment variable as follows:
         HOMEBREW_NO_ENV_FILTERING=1 SIGN_ID="abcdef123456" brew install bssid
     EOS
+  end
+
+  test do
+    output = shell_output("#{bin}/bssid --help")
+    assert_match "scan", output
+    assert_match "connect", output
   end
 end
