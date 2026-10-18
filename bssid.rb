@@ -33,7 +33,10 @@ class Bssid < Formula
     end
 
     # Never guess which certificate to use.
-    return unless identities.one?
+    unless identities.one?
+      opoo "Skipping signing: found #{identities.length} identities in the build environment."
+      return
+    end
 
     ohai "Signing bssid with identity #{identities.first}"
 
