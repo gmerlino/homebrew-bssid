@@ -1,3 +1,4 @@
+require "English"
 class Bssid < Formula
   desc "Scan Wi-Fi networks and connect to a specific access point on macOS"
   homepage "https://github.com/braineo/airport-bssid"
@@ -22,8 +23,8 @@ class Bssid < Formula
         &:read
       )
 
-      if $?.success?
-        output.scan(/^\s*\d+\)\s+([0-9A-Fa-f]{40})\s+"/). flatten.uniq
+      if $CHILD_STATUS.success?
+        output.scan(/^\s*\d+\)\s+([0-9A-Fa-f]{40})\s+"/).flatten.uniq
       else
         []
       end
