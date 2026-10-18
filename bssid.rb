@@ -13,15 +13,51 @@ class Bssid < Formula
            "--disable-sandbox"
 
     bin.install ".build/release/bssid"
+
+    # Identity discovery is optional: skip silently if it fails.
+    identities = begin
+      output = IO.popen(
+        ["/usr/bin/security", "find-identity", "-v", "-p", "codesigning"],
+        err: File::NULL,
+        &:read
+      )
+
+      if $?.success?
+        output.scan(/^\s*\d+\)\s+([0-9A-Fa-f]{40})\s+"/). flatten.uniq
+      else
+        []
+      end
+    rescue SystemCallError
+      []
+    end
+
+    # Never guess which certificate to use.
+    return unless identities.one?
+
+    ohai "Signing bssid with identity #{identities.first}"
+
+    begin
+      system "/usr/bin/codesign",
+             "--force",
+             "--sign", identities.first,
+             "--entitlements", buildpath/"bssid.entitlements",
+             "--timestamp=none",
+             bin/"bssid"
+    rescue ErrorDuringExecution
+      opoo "Optional code signing failed; bssid has still been installed."
+    end
   end
 
   def caveats
     <<~EOS
-      BSSID requires your Developer Signing Identity, which can be found by issuing the following command on the CLI:
-        security find-identity -v -p codesigning
-      in order to provide entitlements to the binary (hard requirement for Catalina).
-      The Identity may be set as an environment variable as follows:
-        HOMEBREW_NO_ENV_FILTERING=1 SIGN_ID="abcdef123456" brew install bssid
+      Upstream documents limitations when retrieving BSSIDs on macOS 10.15
+      and later. Code signing is not a confirmed workaround.
+
+      To connect using an SSID and channel instead:
+        bssid connect --ssid <ssid> --channel <channel>
+
+      See the upstream README for details:
+        https://github.com/braineo/airport-bssid
     EOS
   end
 
